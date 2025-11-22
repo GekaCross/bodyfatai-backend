@@ -22,10 +22,9 @@ const getApiBaseUrl = (): string => {
       return `http://${COMPUTER_IP}:8000`;
     }
   }
-  // PRODUCTION: Замените на ваш реальный URL backend сервера
-  // Примеры: 'https://your-app.railway.app' или 'https://your-app.onrender.com'
+  // PRODUCTION: Backend deployed on Render.com
   // ВАЖНО: Используйте HTTPS, не HTTP!
-  return 'https://your-backend-domain.com';
+  return 'https://bodyfatai-backend.onrender.com';
 };
 
 const API_BASE_URL = getApiBaseUrl();
