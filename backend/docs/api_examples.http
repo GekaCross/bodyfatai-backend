@@ -1,0 +1,40 @@
+### BodyFatAI API Examples
+
+### Health check
+GET http://localhost:8000/
+
+### Calculate body fat - male with all parameters
+POST http://localhost:8000/api/bodyfat
+Content-Type: application/json
+
+{
+  "gender": "male",
+  "age": 30,
+  "height": 180,
+  "weight": 75,
+  "waist": 85
+}
+
+### Calculate body fat - female without waist
+POST http://localhost:8000/api/bodyfat
+Content-Type: application/json
+
+{
+  "gender": "female",
+  "age": 25,
+  "height": 165,
+  "weight": 60
+}
+
+### Calculate body fat - invalid data (should return validation error)
+POST http://localhost:8000/api/bodyfat
+Content-Type: application/json
+
+{
+  "gender": "male",
+  "age": -5,
+  "height": 180,
+  "weight": 75
+}
+
+

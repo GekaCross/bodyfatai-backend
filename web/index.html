@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BodyFatAI - Body Fat Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: #667eea;
+            transform: scale(1.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .not-required {
+            font-size: 12px;
+            color: #999;
+            font-weight: normal;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .photo-upload-area {
+            border: none;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .photo-upload-area:hover {
+            background: #f8f9ff;
+        }
+
+        .photo-upload-area.has-photo {
+            background: #f8f9ff;
+        }
+
+        .photo-preview {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .photo-preview.show {
+            display: block !important;
+        }
+
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .photo-item {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .photo-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .photo-item .remove-btn:hover {
+            background: rgba(255, 68, 68, 1);
+        }
+
+        .remove-photo-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .result-container {
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .result-percent {
+            font-size: 64px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 16px;
+        }
+
+        .result-evaluation {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .evaluation-low {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .evaluation-normal {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .evaluation-high {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .evaluation-very-high {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .result-comment {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .advice-container {
+            padding: 0;
+            background: transparent;
+            border-radius: 15px;
+            text-align: left;
+        }
+
+        .advice-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .advice-section {
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .advice-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+        }
+
+        .advice-section:nth-child(2) {
+            border-left-color: #4CAF50;
+        }
+
+        .advice-section:nth-child(3) {
+            border-left-color: #2196F3;
+        }
+
+        .advice-section:nth-child(4) {
+            border-left-color: #FF9800;
+        }
+
+        .advice-section:nth-child(5) {
+            border-left-color: #9C27B0;
+        }
+
+        .advice-section:nth-child(6) {
+            border-left-color: #F44336;
+        }
+
+        .advice-section h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .advice-section h3 .icon {
+            font-size: 24px;
+        }
+
+        .advice-section p {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .advice-section ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .advice-section li {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+
+        .nutrition-plan {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .daily-calories {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .calories-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .calories-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .calories-goal {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .calories-goal.gain {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .calories-goal.lose {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .calories-goal.maintain {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .macros-split {
+            margin-top: 20px;
+        }
+
+        .macros-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .macro-item {
+            margin-bottom: 20px;
+        }
+
+        .macro-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .macro-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .macro-percent {
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .macro-grams {
+            font-size: 13px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .macro-progress {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .macro-progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .macro-progress-bar.protein {
+            background: #2196F3;
+        }
+
+        .macro-progress-bar.carbs {
+            background: #FF9800;
+        }
+
+        .macro-progress-bar.fats {
+            background: #4CAF50;
+        }
+
+        .time-estimate {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 2px solid #2196f3;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
+        }
+
+        .time-estimate-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .time-estimate-title .icon {
+            font-size: 24px;
+        }
+
+        .time-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .time-table tr {
+            border-bottom: 1px solid #bbdefb;
+        }
+
+        .time-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .time-table td {
+            padding: 12px 8px;
+            font-size: 15px;
+        }
+
+        .time-table td:first-child {
+            font-weight: 600;
+            color: #1976d2;
+            width: 40%;
+        }
+
+        .time-table td:last-child {
+            color: #555;
+            text-align: right;
+        }
+
+        .error {
+            margin-top: 15px;
+            padding: 12px;
+            background: #fee;
+            border: 2px solid #fcc;
+            border-radius: 8px;
+            color: #c33;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-progress {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+        }
+
+        .circular-progress {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+        }
+
+        .circular-progress svg {
+            width: 120px;
+            height: 120px;
+            transform: rotate(-90deg);
+        }
+
+        .circular-progress circle {
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .circular-progress .bg-circle {
+            stroke: #e0e0e0;
+        }
+
+        .circular-progress .progress-circle {
+            stroke: #4CAF50;
+            stroke-linecap: round;
+            stroke-dasharray: 314;
+            stroke-dashoffset: 314;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .progress-percent {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .info-text {
+            font-size: 14px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .form-card {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .form-card:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .form-card.clickable {
+            cursor: pointer;
+        }
+
+        .unit-toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .unit-toggle-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .unit-toggle-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .icon {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .step-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Onboarding Slides */
+        .onboarding {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .onboarding.show {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .onboarding-slider {
+            width: 100%;
+            max-width: 500px;
+            min-height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 60px 20px 120px;
+        }
+
+        .onboarding-slide {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: center;
+            width: 100%;
+            flex: 1;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .onboarding-slide.active {
+            display: flex;
+        }
+
+        .onboarding-slide-image {
+            width: 100%;
+            max-width: 350px;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background: white;
+        }
+
+        .onboarding-slide-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .onboarding-slide-description {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .onboarding-slider {
+                padding: 40px 15px 100px;
+            }
+
+            .onboarding-slide-image {
+                max-width: 280px;
+                height: 320px;
+            }
+
+            .onboarding-slide-title {
+                font-size: 24px;
+            }
+
+            .onboarding-slide-description {
+                font-size: 14px;
+            }
+        }
+
+        .onboarding-dots {
+            display: flex;
+            gap: 10px;
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1001;
+        }
+
+        .onboarding-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .onboarding-dot.active {
+            background: white;
+            width: 30px;
+            border-radius: 5px;
+        }
+
+        .onboarding-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 500px;
+            padding: 0 20px;
+            z-index: 1001;
+        }
+
+        .onboarding-btn {
+            width: 100%;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 12px;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .onboarding-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Onboarding Slides -->
+    <div class="onboarding" id="onboarding">
+        <div class="onboarding-slider">
+            <!-- Slide 1 -->
+            <div class="onboarding-slide active" id="slide1">
+                <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=600&fit=crop&crop=center" 
+                     alt="Before transformation" 
+                     class="onboarding-slide-image"
+                     onerror="this.src='https://via.placeholder.com/350x400/667eea/ffffff?text=Before'">
+                <h2 class="onboarding-slide-title">Track Your Progress</h2>
+                <p class="onboarding-slide-description">
+                    Upload your photos and see how your body composition changes over time. Our AI analyzes your progress accurately.
+                </p>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="onboarding-slide" id="slide2">
+                <!-- Previous test: https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=600&fit=crop&crop=center -->
+                <!-- Previous test 2: https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&h=600&fit=crop&crop=center -->
+                <!-- Original: https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=600&fit=crop&crop=center -->
+                <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=600&fit=crop&crop=center" 
+                     alt="Low body fat male with abs" 
+                     class="onboarding-slide-image"
+                     onerror="this.src='https://via.placeholder.com/350x400/764ba2/ffffff?text=Low+Body+Fat'">
+                <h2 class="onboarding-slide-title">Get Accurate Results</h2>
+                <p class="onboarding-slide-description">
+                    Receive precise body fat percentage calculations. See real transformations from high to low body fat percentages.
+                </p>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="onboarding-slide" id="slide3">
+                <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500&h=600&fit=crop&crop=center" 
+                     alt="After transformation" 
+                     class="onboarding-slide-image"
+                     onerror="this.src='https://via.placeholder.com/350x400/4CAF50/ffffff?text=After'">
+                <h2 class="onboarding-slide-title">Achieve Your Goals</h2>
+                <p class="onboarding-slide-description">
+                    Get personalized nutrition plans and workout recommendations. Join thousands who have successfully transformed their bodies.
+                </p>
+            </div>
+
+            <!-- Navigation Dots -->
+            <div class="onboarding-dots">
+                <div class="onboarding-dot active" data-slide="0"></div>
+                <div class="onboarding-dot" data-slide="1"></div>
+                <div class="onboarding-dot" data-slide="2"></div>
+            </div>
+
+            <!-- Navigation Button -->
+            <div class="onboarding-nav">
+                <button class="onboarding-btn" id="nextSlideBtn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainApp" style="display: none;">
+        <div class="card">
+            <h1>BodyFatAI</h1>
+            <p class="subtitle">Body Fat Percentage Calculator</p>
+
+            <div class="step-indicator">
+                <div class="step-dot active" id="dot1"></div>
+                <div class="step-dot" id="dot2"></div>
+                <div class="step-dot" id="dot3"></div>
+                <div class="step-dot" id="dot4"></div>
+            </div>
+
+            <!-- Step 1: Photo Upload -->
+            <div class="step active" id="step1">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Step 1: Upload Photos</h2>
+                <div class="form-card clickable" id="photoUploadCard">
+                    <span class="material-symbols-outlined step-icon" style="text-align: center; color: #667eea;">📸</span>
+                    <div class="photo-upload-area" id="uploadArea">
+                        <input type="file" id="photo" accept="image/*" capture="environment" multiple style="display: none;">
+                        <p style="font-size: 16px; color: #666;">Click to upload photos</p>
+                        <p class="info-text">You can upload multiple photos. Full-body or torso photos from different angles are recommended</p>
+                    </div>
+                    <div class="photo-preview" id="photoPreview">
+                        <div id="photoList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px;"></div>
+                        <button type="button" class="remove-photo-btn" id="removeAllPhotos">Remove All Photos</button>
+                    </div>
+                </div>
+                <button type="button" id="nextToStep2" disabled>Next</button>
+            </div>
+
+            <!-- Step 2: Data Input -->
+            <div class="step" id="step2">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Step 2: Enter Your Data</h2>
+                <form id="bodyFatForm">
+                    <div class="form-card">
+                        <span class="material-symbols-outlined step-icon" style="text-align: center; color: #667eea;">edit_note</span>
+                        
+                        <!-- Unit System Toggle -->
+                        <div class="form-group" style="margin-bottom: 25px;">
+                            <label style="margin-bottom: 10px;"><span class="material-symbols-outlined icon" style="font-size: 18px;">straighten</span> Measurement System</label>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="unit-toggle-btn active" id="metricBtn" data-unit="metric">
+                                    Metric (cm, kg)
+                                </button>
+                                <button type="button" class="unit-toggle-btn" id="imperialBtn" data-unit="imperial">
+                                    Imperial (ft/in, lbs)
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><span class="material-symbols-outlined icon" style="font-size: 18px;">person</span> Gender</label>
+                            <select id="gender" required>
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label><span class="material-symbols-outlined icon" style="font-size: 18px;">cake</span> Age (years)</label>
+                            <input type="number" id="age" required min="1" max="120" placeholder="Enter your age">
+                        </div>
+
+                        <div class="form-group" id="heightGroup">
+                            <label id="heightLabel"><span class="material-symbols-outlined icon" style="font-size: 18px;">height</span> Height (cm)</label>
+                            <div id="heightInputMetric">
+                                <input type="number" id="height" required min="1" placeholder="Enter your height in cm">
+                            </div>
+                            <div id="heightInputImperial" style="display: none;">
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="number" id="heightFeet" min="1" max="8" placeholder="Feet" style="flex: 1;">
+                                    <input type="number" id="heightInches" min="0" max="11" placeholder="Inches" style="flex: 1;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label id="weightLabel"><span class="material-symbols-outlined icon" style="font-size: 18px;">monitor_weight</span> Weight (kg)</label>
+                            <input type="number" id="weight" required min="1" placeholder="Enter your weight">
+                        </div>
+
+                        <div class="form-group">
+                            <label id="waistLabel"><span class="material-symbols-outlined icon" style="font-size: 18px;">straighten</span> Waist Circumference (cm) <span class="not-required">optional</span></label>
+                            <input type="number" id="waist" min="1" placeholder="Enter waist circumference">
+                        </div>
+                    </div>
+
+                    <div class="error" id="error"></div>
+
+                    <button type="button" class="btn-secondary" id="backToStep1">Back</button>
+                    <button type="submit" id="calculateBtn">
+                        <span id="btnText">Calculate</span>
+                        <span id="btnLoading" class="loading" style="display: none;"></span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 3: Result -->
+            <div class="step" id="step3">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Step 3: Your Result</h2>
+                <div class="result-container">
+                    <div class="result-card">
+                        <span class="material-symbols-outlined step-icon" style="text-align: center; color: #667eea;">📊</span>
+                        <div class="result-title">Your Body Fat Percentage</div>
+                        <div class="result-percent" id="resultPercent"></div>
+                        <div class="result-evaluation" id="resultEvaluation"></div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-comment" id="resultComment"></div>
+                    </div>
+                    <button type="button" class="btn-secondary" id="backToStep2">Back</button>
+                    <button type="button" id="getAdviceBtn">
+                        <span class="material-symbols-outlined icon" style="font-size: 20px; vertical-align: middle;">lightbulb</span>
+                        Get Personalized Advice
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Advice -->
+            <div class="step" id="step4">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Step 4: Personalized Advice</h2>
+                <div class="advice-container" id="adviceContainer">
+                    <div class="loading" style="margin: 50px auto; display: block;"></div>
+                </div>
+                <button type="button" class="btn-secondary" id="backToStep3" style="margin-top: 20px;">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/api/bodyfat';
+        const ADVICE_API_URL = 'http://127.0.0.1:8000/api/advice';
+        
+        // Onboarding logic
+        let currentOnboardingSlide = 0;
+        const onboarding = document.getElementById('onboarding');
+        const mainApp = document.getElementById('mainApp');
+        const onboardingSlides = document.querySelectorAll('.onboarding-slide');
+        const onboardingDots = document.querySelectorAll('.onboarding-dot');
+        const nextSlideBtn = document.getElementById('nextSlideBtn');
+
+        // Check if user has seen onboarding
+        if (localStorage.getItem('onboardingCompleted') === 'true') {
+            onboarding.classList.remove('show');
+            mainApp.style.display = 'block';
+        } else {
+            onboarding.classList.add('show');
+        }
+
+        function showSlide(index) {
+            onboardingSlides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+            onboardingDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            
+            // Change button text on last slide
+            if (index === onboardingSlides.length - 1) {
+                nextSlideBtn.textContent = 'Start';
+            } else {
+                nextSlideBtn.textContent = 'Next';
+            }
+        }
+
+        function nextSlide() {
+            if (currentOnboardingSlide < onboardingSlides.length - 1) {
+                currentOnboardingSlide++;
+                showSlide(currentOnboardingSlide);
+            } else {
+                // If on last slide, start the app
+                startApp();
+            }
+        }
+
+        function startApp() {
+            localStorage.setItem('onboardingCompleted', 'true');
+            onboarding.classList.remove('show');
+            mainApp.style.display = 'block';
+        }
+
+        // Event listeners for onboarding
+        nextSlideBtn.addEventListener('click', nextSlide);
+
+        // Click on dots to navigate
+        onboardingDots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentOnboardingSlide = index;
+                showSlide(currentOnboardingSlide);
+            });
+        });
+
+        // Swipe support (optional, for mobile)
+        let touchStartX = 0;
+        let touchEndX = 0;
+        onboarding.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        onboarding.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50 && currentOnboardingSlide < onboardingSlides.length - 1) {
+                nextSlide();
+            }
+            if (touchEndX > touchStartX + 50 && currentOnboardingSlide > 0) {
+                currentOnboardingSlide--;
+                showSlide(currentOnboardingSlide);
+            }
+        }
+        
+        let currentStep = 1;
+        let photoFiles = []; // Массив для хранения всех фото
+        let calculationResult = null;
+        let currentUnitSystem = 'metric'; // 'metric' or 'imperial'
+
+        // Элементы
+        const steps = document.querySelectorAll('.step');
+        const dots = document.querySelectorAll('.step-dot');
+        const uploadArea = document.getElementById('uploadArea');
+        const photoInput = document.getElementById('photo');
+        const photoPreview = document.getElementById('photoPreview');
+        const photoList = document.getElementById('photoList');
+        const removeAllPhotosBtn = document.getElementById('removeAllPhotos');
+        const nextToStep2Btn = document.getElementById('nextToStep2');
+        const backToStep1Btn = document.getElementById('backToStep1');
+        const backToStep2Btn = document.getElementById('backToStep2');
+        const backToStep3Btn = document.getElementById('backToStep3');
+        const form = document.getElementById('bodyFatForm');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const btnText = document.getElementById('btnText');
+        const btnLoading = document.getElementById('btnLoading');
+        const errorDiv = document.getElementById('error');
+        const getAdviceBtn = document.getElementById('getAdviceBtn');
+        const adviceContainer = document.getElementById('adviceContainer');
+        const metricBtn = document.getElementById('metricBtn');
+        const imperialBtn = document.getElementById('imperialBtn');
+        const heightLabel = document.getElementById('heightLabel');
+        const weightLabel = document.getElementById('weightLabel');
+        const waistLabel = document.getElementById('waistLabel');
+        const heightInputMetric = document.getElementById('heightInputMetric');
+        const heightInputImperial = document.getElementById('heightInputImperial');
+        const heightInput = document.getElementById('height');
+        const heightFeet = document.getElementById('heightFeet');
+        const heightInches = document.getElementById('heightInches');
+        const weightInput = document.getElementById('weight');
+        const waistInput = document.getElementById('waist');
+
+        // Загрузка фото
+        uploadArea.addEventListener('click', (e) => {
+            e.stopPropagation();
+            photoInput.click();
+        });
+        
+        // Делаем всю карточку кликабельной
+        const photoUploadCard = document.getElementById('photoUploadCard');
+        if (photoUploadCard) {
+            photoUploadCard.addEventListener('click', (e) => {
+                // Не триггерим, если клик был на дочерних элементах с собственными обработчиками
+                if (e.target.closest('#photoPreview') || e.target.closest('.remove-photo-btn') || e.target.closest('.remove-btn')) {
+                    return;
+                }
+                photoInput.click();
+            });
+        }
+        
+        function updatePhotoPreview() {
+            if (photoFiles.length === 0) {
+                photoPreview.classList.remove('show');
+                photoPreview.style.display = 'none';
+                uploadArea.classList.remove('has-photo');
+                nextToStep2Btn.disabled = true;
+                photoList.innerHTML = '';
+                return;
+            }
+            
+            photoPreview.classList.add('show');
+            photoPreview.style.display = 'block';
+            uploadArea.classList.add('has-photo');
+            nextToStep2Btn.disabled = false;
+            
+            photoList.innerHTML = '';
+            
+            photoFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const photoItem = document.createElement('div');
+                    photoItem.className = 'photo-item';
+                    photoItem.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview ${index + 1}">
+                        <button type="button" class="remove-btn" data-index="${index}">×</button>
+                    `;
+                    photoList.appendChild(photoItem);
+                    
+                    // Обработчик удаления отдельного фото
+                    photoItem.querySelector('.remove-btn').addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        const idx = parseInt(event.target.getAttribute('data-index'));
+                        photoFiles.splice(idx, 1);
+                        updatePhotoPreview();
+                        // Обновляем input
+                        const dt = new DataTransfer();
+                        photoFiles.forEach(f => dt.items.add(f));
+                        photoInput.files = dt.files;
+                    });
+                };
+                reader.onerror = () => {
+                    // Error reading file - silently fail
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        photoInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                // Добавляем новые файлы к существующим
+                files.forEach(file => {
+                    if (!photoFiles.find(f => f.name === file.name && f.size === file.size)) {
+                        photoFiles.push(file);
+                    }
+                });
+                updatePhotoPreview();
+            } else {
+                // Если файлы не выбраны, но были выбраны ранее, не очищаем
+                if (photoFiles.length === 0) {
+                    updatePhotoPreview();
+                }
+            }
+        });
+
+        removeAllPhotosBtn.addEventListener('click', () => {
+            photoInput.value = '';
+            photoFiles = [];
+            updatePhotoPreview();
+        });
+
+        // Step navigation
+        function showStep(step) {
+            steps.forEach(s => s.classList.remove('active'));
+            dots.forEach(d => d.classList.remove('active'));
+            
+            steps[step - 1].classList.add('active');
+            dots[step - 1].classList.add('active');
+            currentStep = step;
+        }
+
+        nextToStep2Btn.addEventListener('click', () => showStep(2));
+        backToStep1Btn.addEventListener('click', () => showStep(1));
+        backToStep2Btn.addEventListener('click', () => showStep(2));
+        backToStep3Btn.addEventListener('click', () => showStep(3));
+
+        // Unit system toggle
+        function switchUnitSystem(system) {
+            currentUnitSystem = system;
+            
+            if (system === 'metric') {
+                metricBtn.classList.add('active');
+                imperialBtn.classList.remove('active');
+                
+                // Update labels
+                heightLabel.innerHTML = '<span class="material-symbols-outlined icon" style="font-size: 18px;">height</span> Height (cm)';
+                weightLabel.innerHTML = '<span class="material-symbols-outlined icon" style="font-size: 18px;">monitor_weight</span> Weight (kg)';
+                waistLabel.innerHTML = '<span class="material-symbols-outlined icon" style="font-size: 18px;">straighten</span> Waist Circumference (cm) <span class="not-required">optional</span>';
+                
+                // Show/hide inputs
+                heightInputMetric.style.display = 'block';
+                heightInputImperial.style.display = 'none';
+                heightInput.required = true;
+                heightFeet.required = false;
+                heightInches.required = false;
+                
+                // Update placeholders
+                heightInput.placeholder = 'Enter your height in cm';
+                weightInput.placeholder = 'Enter your weight in kg';
+                waistInput.placeholder = 'Enter waist circumference in cm';
+                
+                // Convert values if they exist
+                if (heightFeet.value && heightInches.value) {
+                    const feet = parseFloat(heightFeet.value) || 0;
+                    const inches = parseFloat(heightInches.value) || 0;
+                    const totalInches = feet * 12 + inches;
+                    const cm = totalInches * 2.54;
+                    heightInput.value = Math.round(cm);
+                }
+                
+                if (weightInput.value) {
+                    const lbs = parseFloat(weightInput.value);
+                    if (lbs) {
+                        const kg = lbs * 0.453592;
+                        weightInput.value = Math.round(kg * 10) / 10;
+                    }
+                }
+                
+                if (waistInput.value) {
+                    const inches = parseFloat(waistInput.value);
+                    if (inches) {
+                        const cm = inches * 2.54;
+                        waistInput.value = Math.round(cm * 10) / 10;
+                    }
+                }
+            } else {
+                metricBtn.classList.remove('active');
+                imperialBtn.classList.add('active');
+                
+                // Update labels
+                heightLabel.innerHTML = '<span class="material-symbols-outlined icon" style="font-size: 18px;">height</span> Height (ft/in)';
+                weightLabel.innerHTML = '<span class="material-symbols-outlined icon" style="font-size: 18px;">monitor_weight</span> Weight (lbs)';
+                waistLabel.innerHTML = '<span class="material-symbols-outlined icon" style="font-size: 18px;">straighten</span> Waist Circumference (in) <span class="not-required">optional</span>';
+                
+                // Show/hide inputs
+                heightInputMetric.style.display = 'none';
+                heightInputImperial.style.display = 'block';
+                heightInput.required = false;
+                heightFeet.required = true;
+                heightInches.required = true;
+                
+                // Update placeholders
+                heightFeet.placeholder = 'Feet';
+                heightInches.placeholder = 'Inches';
+                weightInput.placeholder = 'Enter your weight in lbs';
+                waistInput.placeholder = 'Enter waist circumference in inches';
+                
+                // Convert values if they exist
+                if (heightInput.value) {
+                    const cm = parseFloat(heightInput.value);
+                    if (cm) {
+                        const totalInches = cm / 2.54;
+                        const feet = Math.floor(totalInches / 12);
+                        const inches = Math.round(totalInches % 12);
+                        heightFeet.value = feet;
+                        heightInches.value = inches;
+                    }
+                }
+                
+                if (weightInput.value) {
+                    const kg = parseFloat(weightInput.value);
+                    if (kg) {
+                        const lbs = kg / 0.453592;
+                        weightInput.value = Math.round(lbs * 10) / 10;
+                    }
+                }
+                
+                if (waistInput.value) {
+                    const cm = parseFloat(waistInput.value);
+                    if (cm) {
+                        const inches = cm / 2.54;
+                        waistInput.value = Math.round(inches * 10) / 10;
+                    }
+                }
+            }
+        }
+
+        metricBtn.addEventListener('click', () => switchUnitSystem('metric'));
+        imperialBtn.addEventListener('click', () => switchUnitSystem('imperial'));
+
+        // Calculation
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            errorDiv.classList.remove('show');
+
+            const gender = document.getElementById('gender').value;
+            const age = parseInt(document.getElementById('age').value);
+            
+            // Get values and convert to metric if needed
+            let height, weight, waist;
+            
+            if (currentUnitSystem === 'imperial') {
+                // Convert from imperial to metric
+                const feet = parseFloat(heightFeet.value) || 0;
+                const inches = parseFloat(heightInches.value) || 0;
+                const totalInches = feet * 12 + inches;
+                height = totalInches * 2.54; // Convert to cm
+                
+                const lbs = parseFloat(weightInput.value) || 0;
+                weight = lbs * 0.453592; // Convert to kg
+                
+                const waistValue = waistInput.value;
+                if (waistValue) {
+                    const waistInches = parseFloat(waistValue);
+                    waist = waistInches * 2.54; // Convert to cm
+                }
+            } else {
+                // Metric system - use values as is
+                height = parseFloat(heightInput.value);
+                weight = parseFloat(weightInput.value);
+                const waistValue = waistInput.value;
+                waist = waistValue ? parseFloat(waistValue) : undefined;
+            }
+
+            if (!gender) {
+                showError('Please select your gender');
+                return;
+            }
+            
+            if (!height || height <= 0) {
+                showError('Please enter a valid height');
+                return;
+            }
+            
+            if (!weight || weight <= 0) {
+                showError('Please enter a valid weight');
+                return;
+            }
+
+            calculateBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-block';
+
+            try {
+                const formData = new FormData();
+                formData.append('gender', gender);
+                formData.append('age', age.toString());
+                formData.append('height', height.toString());
+                formData.append('weight', weight.toString());
+                if (waist !== undefined && waist > 0) {
+                    formData.append('waist', waist.toString());
+                }
+                
+                // Добавляем все загруженные фото
+                photoFiles.forEach((file, index) => {
+                    formData.append('images', file); // Используем 'images' для множественных файлов
+                });
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Result evaluation (use from response or calculate)
+                const evaluation = getEvaluation(data.body_fat_percent, gender);
+                const evaluationText = data.evaluation || evaluation.text;
+                
+                // Сохраняем результат с evaluation
+                calculationResult = {
+                    ...data,
+                    evaluation: evaluationText
+                };
+                
+                // Показываем результат
+                document.getElementById('resultPercent').textContent = data.body_fat_percent + '%';
+                document.getElementById('resultComment').textContent = data.comment;
+                const evalEl = document.getElementById('resultEvaluation');
+                evalEl.textContent = evaluationText;
+                evalEl.className = 'result-evaluation ' + evaluation.class;
+                
+                showStep(3);
+
+            } catch (error) {
+                showError(error.message || 'Failed to calculate body fat percentage. Please make sure the backend is running on http://127.0.0.1:8000');
+            } finally {
+                calculateBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            }
+        });
+
+        // Result evaluation
+        function getEvaluation(percent, gender) {
+            if (gender === 'male') {
+                if (percent < 10) return { text: 'Very Low', class: 'evaluation-low' };
+                if (percent < 15) return { text: 'Low (Athletic)', class: 'evaluation-low' };
+                if (percent < 20) return { text: 'Normal', class: 'evaluation-normal' };
+                if (percent < 25) return { text: 'Above Average', class: 'evaluation-high' };
+                return { text: 'High', class: 'evaluation-very-high' };
+            } else {
+                if (percent < 16) return { text: 'Very Low', class: 'evaluation-low' };
+                if (percent < 20) return { text: 'Low (Athletic)', class: 'evaluation-low' };
+                if (percent < 25) return { text: 'Normal', class: 'evaluation-normal' };
+                if (percent < 32) return { text: 'Above Average', class: 'evaluation-high' };
+                return { text: 'High', class: 'evaluation-very-high' };
+            }
+        }
+
+        // Get advice
+        getAdviceBtn.addEventListener('click', async () => {
+            if (!calculationResult) return;
+            
+            showStep(4);
+            
+            // Create loading progress UI
+            const loadingHTML = `
+                <div class="loading-progress">
+                    <div class="circular-progress">
+                        <svg>
+                            <circle class="bg-circle" cx="60" cy="60" r="50"></circle>
+                            <circle class="progress-circle" cx="60" cy="60" r="50" id="progressCircle"></circle>
+                        </svg>
+                        <div class="progress-percent" id="progressPercent">0%</div>
+                    </div>
+                    <p class="loading-text">Loading advice...</p>
+                </div>
+            `;
+            adviceContainer.innerHTML = loadingHTML;
+            getAdviceBtn.disabled = true;
+
+            // Simulate progress
+            let progress = 0;
+            let progressInterval = null;
+            progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90; // Don't go to 100% until done
+                
+                const percent = Math.round(progress);
+                const progressPercent = document.getElementById('progressPercent');
+                const progressCircle = document.getElementById('progressCircle');
+                
+                if (progressPercent) progressPercent.textContent = percent + '%';
+                if (progressCircle) {
+                    const offset = 314 - (314 * percent / 100);
+                    progressCircle.style.strokeDashoffset = offset;
+                }
+            }, 200);
+
+            try {
+                const response = await fetch(ADVICE_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        body_fat_percent: calculationResult.body_fat_percent,
+                        gender: document.getElementById('gender').value,
+                        age: parseInt(document.getElementById('age').value),
+                        evaluation: calculationResult.evaluation || document.getElementById('resultEvaluation').textContent
+                    })
+                });
+
+                if (!response.ok) {
+                    clearInterval(progressInterval);
+                    throw new Error('Failed to get advice');
+                }
+
+                const advice = await response.json();
+                
+                // Complete progress
+                clearInterval(progressInterval);
+                const progressPercent = document.getElementById('progressPercent');
+                const progressCircle = document.getElementById('progressCircle');
+                if (progressPercent) progressPercent.textContent = '100%';
+                if (progressCircle) progressCircle.style.strokeDashoffset = 0;
+                
+                // Small delay to show 100%
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                displayAdvice(advice);
+
+            } catch (error) {
+                if (progressInterval) clearInterval(progressInterval);
+                adviceContainer.innerHTML = `<div class="error show">${error.message}</div>`;
+            } finally {
+                getAdviceBtn.disabled = false;
+            }
+        });
+
+        function displayAdvice(advice) {
+            // Parse time estimates
+            let timeEstimateHTML = '';
+            if (advice.time_estimate) {
+                    // Try to parse as array
+                try {
+                    const timeData = Array.isArray(advice.time_estimate) 
+                        ? advice.time_estimate 
+                        : (typeof advice.time_estimate === 'string' ? JSON.parse(advice.time_estimate) : advice.time_estimate);
+                    
+                    if (Array.isArray(timeData) && timeData.length > 0) {
+                        // Format array of objects
+                        const formatMonths = (months) => {
+                            if (months === 0) return 'current level';
+                            if (months === 1) return '1 month';
+                            return `${months} months`;
+                        };
+                        
+                        timeEstimateHTML = `
+                            <div class="time-estimate">
+                                <div class="time-estimate-title">
+                                    <span class="material-symbols-outlined icon">schedule</span>
+                                    Timeline to Reach Your Goals
+                                </div>
+                                <table class="time-table">
+                                    ${timeData.map(item => `
+                                        <tr>
+                                            <td>${item.percent}% body fat</td>
+                                            <td>${formatMonths(item.months)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </table>
+                            </div>
+                        `;
+                    } else {
+                        // Plain text
+                        timeEstimateHTML = `
+                            <div class="time-estimate">
+                                <div class="time-estimate-title">
+                                    <span class="material-symbols-outlined icon">schedule</span>
+                                    Timeline
+                                </div>
+                                <p style="margin: 0; color: #555;">${advice.time_estimate}</p>
+                            </div>
+                        `;
+                    }
+                } catch (e) {
+                    // If not array, show as text
+                    timeEstimateHTML = `
+                        <div class="time-estimate">
+                            <div class="time-estimate-title">
+                                <span class="material-symbols-outlined icon">schedule</span>
+                                Timeline
+                            </div>
+                            <p style="margin: 0; color: #555;">${advice.time_estimate}</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            const icons = ['restaurant_menu', 'fitness_center', 'bedtime', 'water_drop', 'psychology', 'trending_up'];
+            
+            adviceContainer.innerHTML = `
+                <div class="advice-title">${advice.title}</div>
+                ${advice.sections.map((section, index) => {
+                    const isNutrition = section.title.toLowerCase().includes('nutrition');
+                    const macros = section.macros;
+                    
+                    let macrosHTML = '';
+                    if (isNutrition && macros) {
+                        const calories = macros.calories || {};
+                        const protein = macros.protein || {};
+                        const carbs = macros.carbs || {};
+                        const fats = macros.fats || {};
+                        
+                        const goalClass = (calories.goal || '').toLowerCase();
+                        const caloriesRange = calories.min && calories.max 
+                            ? `${calories.min}-${calories.max}` 
+                            : (calories.min || calories.max || 'N/A');
+                        
+                        macrosHTML = `
+                            <div class="nutrition-plan">
+                                <div class="daily-calories">
+                                    <div class="calories-label">
+                                        <span class="material-symbols-outlined" style="font-size: 18px;">local_fire_department</span>
+                                        Daily Calories
+                                    </div>
+                                    <div class="calories-value">${caloriesRange}</div>
+                                    ${calories.goal ? `<div class="calories-goal ${goalClass}">${calories.goal}</div>` : ''}
+                                </div>
+                                
+                                <div class="macros-split">
+                                    <div class="macros-label">Macronutrients Split</div>
+                                    
+                                    ${protein.percent !== undefined ? `
+                                        <div class="macro-item">
+                                            <div class="macro-header">
+                                                <span class="macro-name">Protein</span>
+                                                <span class="macro-percent">${protein.percent}%</span>
+                                            </div>
+                                            ${protein.grams ? `<div class="macro-grams">${protein.grams}g</div>` : ''}
+                                            <div class="macro-progress">
+                                                <div class="macro-progress-bar protein" style="width: ${protein.percent}%"></div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${carbs.percent !== undefined ? `
+                                        <div class="macro-item">
+                                            <div class="macro-header">
+                                                <span class="macro-name">Carbs</span>
+                                                <span class="macro-percent">${carbs.percent}%</span>
+                                            </div>
+                                            ${carbs.grams ? `<div class="macro-grams">${carbs.grams}g</div>` : ''}
+                                            <div class="macro-progress">
+                                                <div class="macro-progress-bar carbs" style="width: ${carbs.percent}%"></div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${fats.percent !== undefined ? `
+                                        <div class="macro-item">
+                                            <div class="macro-header">
+                                                <span class="macro-name">Fats</span>
+                                                <span class="macro-percent">${fats.percent}%</span>
+                                            </div>
+                                            ${fats.grams ? `<div class="macro-grams">${fats.grams}g</div>` : ''}
+                                            <div class="macro-progress">
+                                                <div class="macro-progress-bar fats" style="width: ${fats.percent}%"></div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    return `
+                        <div class="advice-section">
+                            <h3>
+                                <span class="material-symbols-outlined icon">${icons[index] || 'info'}</span>
+                                ${section.title}
+                            </h3>
+                            ${macrosHTML}
+                            ${section.content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}
+                        </div>
+                    `;
+                }).join('')}
+                ${timeEstimateHTML}
+            `;
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+    </script>
+</body>
+</html>
